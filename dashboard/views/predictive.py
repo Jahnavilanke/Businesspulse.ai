@@ -28,8 +28,11 @@ def render() -> None:
         bt = ui.q("select * from ml.revenue_backtest")
         fig = go.Figure()
         fig.add_scatter(x=hist.week, y=hist.net_revenue, name="Actual", mode="lines", line_color=ui.SERIES[0])
-        fig.add_scatter(x=fc.week, y=fc.upper, mode="lines", line=dict(width=0), showlegend=False, hoverinfo="skip")
-        fig.add_scatter(x=fc.week, y=fc.lower, mode="lines", line=dict(width=0), fill="tonexty",
+        fig.add_scatter(x=fc.week, y=fc.upper, mode="lines", line=dict(width=0, color="rgba(0,0,0,0)"),
+                        showlegend=False, hoverinfo="skip")
+        # Revenue cannot be negative, so the band is floored at zero.
+        fig.add_scatter(x=fc.week, y=fc.lower.clip(lower=0), mode="lines", line=dict(width=0, color="rgba(0,0,0,0)"),
+                        fill="tonexty",
                         fillcolor="rgba(235,104,52,.15)", name="~95% band (backtest residuals)")
         fig.add_scatter(x=fc.week, y=fc.forecast, name=f"Forecast ({fc.model.iloc[0]})", mode="lines+markers",
                         line=dict(color=ui.SERIES[1], dash="dash"))

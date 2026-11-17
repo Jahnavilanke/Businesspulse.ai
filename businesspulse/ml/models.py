@@ -115,7 +115,7 @@ def revenue_forecast(con, horizon: int = 12, holdout: int = 12) -> dict:
         fc = pd.Series(vals, index=future_idx)
     resid = test.to_numpy() - preds[best]
     band = 1.96 * np.std(resid)
-    forecast = pd.DataFrame({"week": future_idx, "forecast": fc.to_numpy(), "lower": fc.to_numpy() - band,
+    forecast = pd.DataFrame({"week": future_idx, "forecast": fc.to_numpy(), "lower": np.clip(fc.to_numpy() - band, 0, None),
                              "upper": fc.to_numpy() + band, "model": best})
     backtest = pd.DataFrame({"week": test.index, "actual": test.to_numpy(), **{k: v for k, v in preds.items()}})
     return {"metrics": metrics, "best": best, "forecast": forecast, "backtest": backtest, "history": s,
