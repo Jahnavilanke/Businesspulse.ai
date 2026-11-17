@@ -1,7 +1,7 @@
 # BusinessPulse AI
 
-**End-to-end business intelligence, analytics and decision-intelligence platform for a
-multi-channel retailer** — from raw source files to governed KPIs, statistics, forecasts,
+End-to-end business intelligence, analytics and decision-intelligence platform for a
+multi-channel retailer from raw source files to governed KPIs, statistics, forecasts,
 root-cause investigation, alerts, what-if simulation and a tracked decision register.
 
 ```
