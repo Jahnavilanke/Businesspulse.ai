@@ -15,7 +15,22 @@ Useful runner flags: `--skip-ml`, `--only dbt_build detect_alerts`, `--full-refr
 columns into `data/landing/drops/` and re-run; rows at or below the watermark are ignored.
 Streaming: `python -m businesspulse.ingestion.events produce --file <csv>` then `consume`.
 
-## 2. Docker Compose (configured; not executed in the development environment)
+## 2. Free hosting (GitHub Actions + Streamlit Community Cloud)
+
+Free app hosts don't have the memory or time to run the pipeline, so the work is split:
+
+1. `.github/workflows/build-data.yml` runs the full pipeline on GitHub's free runners and
+   publishes `businesspulse-data.tar.gz` (warehouse + app state, ~100 MB) to the release
+   tag `data-latest`. It runs on pushes that change the pipeline, monthly, or on demand.
+2. Streamlit Community Cloud runs `app.py`. On first start the app sees no local warehouse
+   and downloads the bundle (`businesspulse/bundle.py`, URL in `BP_DATA_BUNDLE_URL`; set it
+   to `none` to disable).
+
+Setup: share.streamlit.io → Create app → this repository, branch `main`, main file
+`app.py`, **Advanced settings → Python 3.13**. App edits (requirements, decisions) are stored
+on the host's disk and reset when the app restarts; sign-in is demo identities only.
+
+## 3. Docker Compose (configured; not executed in the development environment)
 
 ```bash
 cp .env.example .env            # set real passwords
@@ -40,7 +55,7 @@ Postgres (`publish_postgres`) for Superset / Power BI. Trigger the DAG
 `businesspulse_daily` in Airflow; backfill with
 `airflow dags backfill businesspulse_daily -s 2011-11-01 -e 2011-11-30`.
 
-## 3. AWS (optional, nothing provisioned automatically)
+## 4. AWS (optional, nothing provisioned automatically)
 
 | Service | Use | How |
 |---|---|---|

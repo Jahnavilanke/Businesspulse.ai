@@ -13,6 +13,7 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).parent))
 
 from businesspulse import db  # noqa: E402
+from businesspulse.bundle import ensure_data  # noqa: E402
 from businesspulse.business_analysis.store import audit, seed_defaults  # noqa: E402
 from businesspulse.config import settings  # noqa: E402
 from businesspulse.security import DEMO_USERS, User, can_view, verify_password  # noqa: E402
@@ -24,8 +25,9 @@ st.set_page_config(page_title="BusinessPulse AI", page_icon="📈", layout="wide
 st.markdown(f"<style>{ui.CSS}</style>", unsafe_allow_html=True)
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner="Loading the prebuilt warehouse (first start only)...")
 def _bootstrap() -> bool:
+    ensure_data()  # hosted deployments: fetch the CI-built bundle when no local warehouse exists
     db.migrate_app_db()
     seed_defaults()
     return True

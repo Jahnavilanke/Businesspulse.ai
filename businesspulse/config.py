@@ -62,6 +62,13 @@ class Settings:
             "BP_UCI_URL", "https://archive.ics.uci.edu/static/public/502/online+retail+ii.zip"
         )
     )
+    # Prebuilt warehouse bundle for hosted deployments (set to 'none' to disable the download)
+    data_bundle_url: str | None = field(
+        default_factory=lambda: _env(
+            "BP_DATA_BUNDLE_URL",
+            "https://github.com/Jahnavilanke/Businesspulse.ai/releases/download/data-latest/businesspulse-data.tar.gz",
+        )
+    )
     enable_synthetic_support: bool = field(default_factory=lambda: _env_bool("BP_ENABLE_SYNTHETIC", True))
     enable_fx_api: bool = field(default_factory=lambda: _env_bool("BP_ENABLE_FX_API", True))
     fx_api_url: str = field(default_factory=lambda: _env("BP_FX_API_URL", "https://api.frankfurter.app"))

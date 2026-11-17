@@ -1,0 +1,57 @@
+# Runs the full pipeline on GitHub's free runners and publishes the resulting warehouse as
+# the release asset the hosted app downloads at start-up (businesspulse/bundle.py).
+#   Release tag: data-latest   Asset: businesspulse-data.tar.gz
+# Free for public repositories. No secrets needed - it uses the built-in GITHUB_TOKEN.
+name: Build data bundle
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "businesspulse/**"
+      - "dbt/**"
+      - "quality/**"
+      - "contracts/**"
+      - "config/**"
+      - "requirements.txt"
+      - ".github/workflows/build-data.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 1 * *"   # monthly refresh (also keeps the FX snapshot current)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-data
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline (download, quality, dbt, ML, alerts)
+        run: python -m businesspulse.pipeline.runner
+
+      - name: Pack bundle
+        run: python -m businesspulse.bundle pack dist/businesspulse-data.tar.gz
+
+      - name: Publish to release data-latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view data-latest >/dev/null 2>&1 || \
+            gh release create data-latest --title "Prebuilt data bundle" --latest=false \
+              --notes "Warehouse built by CI from the UCI Online Retail II dataset (CC BY 4.0, Chen 2019, doi:10.24432/C5CG6D) plus clearly labelled synthetic inventory/marketing data. Downloaded automatically by the hosted app."
+          gh release upload data-latest dist/businesspulse-data.tar.gz --clobber
