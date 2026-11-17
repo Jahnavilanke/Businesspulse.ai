@@ -1,0 +1,100 @@
+// BusinessPulse AI - DAX measure library (sample).
+// Model: star schema exported by the pipeline to data/exports/powerbi/*.parquet
+//   fact_sales[date_key]      -> dim_date[date_key]          (many-to-one, single direction)
+//   fact_sales[customer_key]  -> dim_customer[customer_key]
+//   fact_sales[product_key]   -> dim_product[product_key]
+//   fact_sales[geography_key] -> dim_geography[geography_key]
+//   fact_orders[date_key]     -> dim_date[date_key]
+// Mark dim_date as the date table (column date_day). Definitions mirror
+// businesspulse/analytics/kpis.py and dbt/macros/metrics.sql.
+
+// ---------------------------------------------------------------- base revenue
+Net Revenue =
+CALCULATE ( SUM ( fact_sales[line_revenue] ), fact_sales[line_type] = "product" )
+
+Gross Sales =
+CALCULATE ( SUM ( fact_sales[gross_sales] ), fact_sales[line_type] = "product" )
+
+Returns Value =
+CALCULATE ( SUM ( fact_sales[returns_value] ), fact_sales[line_type] = "product" )
+
+Return Rate = DIVIDE ( [Returns Value], [Gross Sales] )
+
+Orders =
+CALCULATE (
+    DISTINCTCOUNT ( fact_sales[invoice_no] ),
+    fact_sales[line_type] = "product",
+    fact_sales[is_cancellation] = FALSE ()
+)
+
+Average Order Value = DIVIDE ( [Gross Sales], [Orders] )
+
+Units Sold =
+CALCULATE ( SUM ( fact_sales[quantity] ), fact_sales[line_type] = "product", fact_sales[is_cancellation] = FALSE () )
+
+// Gross profit intentionally not defined: the source has no product cost (dim_product[unit_cost_gbp] is blank).
+
+// ---------------------------------------------------------------- date intelligence
+Net Revenue MTD = TOTALMTD ( [Net Revenue], dim_date[date_day] )
+Net Revenue QTD = TOTALQTD ( [Net Revenue], dim_date[date_day] )
+Net Revenue YTD = TOTALYTD ( [Net Revenue], dim_date[date_day] )
+
+Net Revenue PM = CALCULATE ( [Net Revenue], DATEADD ( dim_date[date_day], -1, MONTH ) )
+Net Revenue PY = CALCULATE ( [Net Revenue], SAMEPERIODLASTYEAR ( dim_date[date_day] ) )
+
+Net Revenue Rolling 3M =
+CALCULATE ( [Net Revenue], DATESINPERIOD ( dim_date[date_day], MAX ( dim_date[date_day] ), -3, MONTH ) )
+
+// ---------------------------------------------------------------- variance
+Revenue MoM Variance = [Net Revenue] - [Net Revenue PM]
+Revenue MoM Variance % = DIVIDE ( [Revenue MoM Variance], [Net Revenue PM] )
+Revenue YoY Variance = [Net Revenue] - [Net Revenue PY]
+Revenue YoY Variance % = DIVIDE ( [Revenue YoY Variance], [Net Revenue PY] )
+
+// Budget vs actual: monthly target from the KPI registry (export app_state kpi_registry
+// or enter as a What-if parameter). Example with a parameter table 'Revenue Target'.
+Revenue Target (period) =
+SELECTEDVALUE ( 'Revenue Target'[Monthly Target], 900000 ) * DISTINCTCOUNT ( dim_date[year_month] )
+Revenue vs Target % = DIVIDE ( [Net Revenue] - [Revenue Target (period)], [Revenue Target (period)] )
+
+// Price / volume bridge (matches the app's revenue bridge)
+Order Volume Effect = ( [Orders] - CALCULATE ( [Orders], DATEADD ( dim_date[date_day], -1, MONTH ) ) )
+    * CALCULATE ( [Average Order Value], DATEADD ( dim_date[date_day], -1, MONTH ) )
+AOV Effect = ( [Average Order Value] - CALCULATE ( [Average Order Value], DATEADD ( dim_date[date_day], -1, MONTH ) ) )
+    * [Orders]
+
+// ---------------------------------------------------------------- customers & retention
+Active Customers =
+CALCULATE (
+    DISTINCTCOUNT ( fact_sales[customer_key] ),
+    fact_sales[customer_key] <> -1,
+    fact_sales[is_cancellation] = FALSE (),
+    fact_sales[line_type] = "product"
+)
+
+New Customers =
+CALCULATE ( DISTINCTCOUNT ( fact_orders[customer_key] ), fact_orders[customer_type] = "New" )
+
+Returning Customers =
+CALCULATE ( DISTINCTCOUNT ( fact_orders[customer_key] ), fact_orders[customer_type] = "Returning" )
+
+Repeat Purchase Rate = DIVIDE ( [Returning Customers], [Active Customers] )
+
+// Month-over-month retention: customers active this month who were also active last month.
+Retained Customers =
+VAR CurrentCustomers =
+    CALCULATETABLE ( VALUES ( fact_orders[customer_key] ), fact_orders[customer_key] <> -1,
+                     fact_orders[is_cancellation] = FALSE () )
+VAR PriorCustomers =
+    CALCULATETABLE ( VALUES ( fact_orders[customer_key] ), fact_orders[customer_key] <> -1,
+                     fact_orders[is_cancellation] = FALSE (), DATEADD ( dim_date[date_day], -1, MONTH ) )
+RETURN COUNTROWS ( INTERSECT ( CurrentCustomers, PriorCustomers ) )
+
+Prior Month Active Customers = CALCULATE ( [Active Customers], DATEADD ( dim_date[date_day], -1, MONTH ) )
+Retention Rate = DIVIDE ( [Retained Customers], [Prior Month Active Customers] )
+
+// ---------------------------------------------------------------- synthetic demo measures (label in visuals!)
+ROAS (synthetic) = DIVIDE ( SUM ( fact_marketing[attributed_revenue] ), SUM ( fact_marketing[cost] ) )
+Conversion Rate (synthetic) = DIVIDE ( SUM ( fact_marketing[conversions] ), SUM ( fact_marketing[clicks] ) )
+Inventory Turnover (synthetic) =
+DIVIDE ( SUM ( fact_inventory[units_last_365d_actual] ), SUM ( fact_inventory[stock_qty] ) )

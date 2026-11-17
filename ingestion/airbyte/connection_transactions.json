@@ -1,0 +1,12 @@
+{
+  "name": "uci_transactions -> bronze",
+  "source": "UCI Online Retail II (File source)",
+  "destination": "BusinessPulse bronze (S3 / MinIO, Parquet)",
+  "schedule": {"scheduleType": "cron", "cronExpression": "0 0 4 * * ?", "timezone": "UTC"},
+  "namespaceDefinition": "destination",
+  "streams": [
+    {"name": "uci_online_retail_ii", "syncMode": "incremental", "destinationSyncMode": "append_dedup",
+     "cursorField": ["InvoiceDate"], "primaryKey": [["Invoice"], ["StockCode"], ["InvoiceDate"], ["Quantity"], ["Price"]]}
+  ],
+  "_note": "Incremental + dedup on the business key mirrors the native loader's watermark. Downstream, the quality stage still de-duplicates exact rows."
+}

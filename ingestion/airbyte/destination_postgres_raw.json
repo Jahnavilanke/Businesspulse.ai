@@ -1,0 +1,8 @@
+{
+  "name": "BusinessPulse raw (PostgreSQL)",
+  "destinationDefinition": "airbyte/destination-postgres",
+  "connectionConfiguration": {
+    "host": "postgres", "port": 5432, "database": "businesspulse", "schema": "airbyte_raw",
+    "username": "${POSTGRES_USER}", "password": "${POSTGRES_PASSWORD}", "ssl_mode": {"mode": "disable"}
+  }
+}

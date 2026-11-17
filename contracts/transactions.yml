@@ -1,0 +1,20 @@
+# Data contract: retail transaction lines (producer: UCI Online Retail II workbook / CSV drops / Kafka events)
+contract: transactions
+version: 1.0.0
+owner: Data Engineering
+business_owner: Head of Sales Operations
+source_systems: [uci_online_retail_ii]
+grain: one product line on one invoice
+sla:
+  freshness_hours: 24          # batch loaded daily by Airflow
+  min_quality_score: 0.90
+schema:
+  - {name: Invoice,       type: string,    required: true,  rule: "6 digits; prefix C = cancellation, A = bad-debt adjustment"}
+  - {name: StockCode,     type: string,    required: true}
+  - {name: Description,   type: string,    required: false}
+  - {name: Quantity,      type: integer,   required: true,  rule: "non-zero; negative only for cancellations"}
+  - {name: InvoiceDate,   type: timestamp, required: true,  rule: "between 2009-01-01 and load time"}
+  - {name: Price,         type: decimal,   required: true,  rule: "> 0 for product lines (GBP)"}
+  - {name: Customer ID,   type: integer,   required: false, rule: "5-digit customer number when present"}
+  - {name: Country,       type: string,    required: true,  rule: "must map to geography reference"}
+breaking_changes: "Removing/renaming a column or changing a type requires a new major version and consumer sign-off."

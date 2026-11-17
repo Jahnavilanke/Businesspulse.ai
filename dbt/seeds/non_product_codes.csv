@@ -1,0 +1,16 @@
+stock_code,line_type,description
+POST,postage,Postage charge
+DOT,postage,Dotcom postage charge
+C2,postage,Carriage charge
+M,manual,Manual price adjustment
+D,discount,Discount line
+S,samples,Samples
+BANK CHARGES,fee,Bank charges
+AMAZONFEE,fee,Amazon marketplace fee
+CRUK,fee,CRUK charity commission
+ADJUST,adjustment,Manual adjustment
+ADJUST2,adjustment,Manual adjustment
+B,adjustment,Bad debt adjustment
+PADS,fee,Pads to match cushions (fee-like line)
+TEST001,test,Test product
+TEST002,test,Test product

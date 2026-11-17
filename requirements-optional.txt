@@ -1,0 +1,6 @@
+# Optional integrations - install only what you use
+anthropic            # BP_LLM_PROVIDER=anthropic : Claude re-phrases verified insights
+kafka-python         # BP_KAFKA_BOOTSTRAP        : real Kafka instead of the file bus
+boto3                # BP_STORAGE_BACKEND=s3     : S3 / MinIO lake + AWS cloud scripts
+great-expectations   # BP_USE_GX=1               : evaluate suites with GX as well
+psycopg[binary]      # BP_POSTGRES_DSN           : (DuckDB postgres extension does the copy; psycopg for admin scripts)

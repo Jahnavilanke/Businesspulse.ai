@@ -1,0 +1,44 @@
+country_raw,country_name,iso2,region,sub_region,is_domestic
+United Kingdom,United Kingdom,GB,Europe,Northern Europe,true
+EIRE,Ireland,IE,Europe,Northern Europe,false
+Channel Islands,Channel Islands,JE,Europe,Northern Europe,false
+France,France,FR,Europe,Western Europe,false
+Germany,Germany,DE,Europe,Western Europe,false
+Netherlands,Netherlands,NL,Europe,Western Europe,false
+Belgium,Belgium,BE,Europe,Western Europe,false
+Switzerland,Switzerland,CH,Europe,Western Europe,false
+Austria,Austria,AT,Europe,Western Europe,false
+Spain,Spain,ES,Europe,Southern Europe,false
+Portugal,Portugal,PT,Europe,Southern Europe,false
+Italy,Italy,IT,Europe,Southern Europe,false
+Greece,Greece,GR,Europe,Southern Europe,false
+Malta,Malta,MT,Europe,Southern Europe,false
+Cyprus,Cyprus,CY,Europe,Southern Europe,false
+Sweden,Sweden,SE,Europe,Northern Europe,false
+Norway,Norway,NO,Europe,Northern Europe,false
+Denmark,Denmark,DK,Europe,Northern Europe,false
+Finland,Finland,FI,Europe,Northern Europe,false
+Iceland,Iceland,IS,Europe,Northern Europe,false
+Lithuania,Lithuania,LT,Europe,Northern Europe,false
+Poland,Poland,PL,Europe,Eastern Europe,false
+Czech Republic,Czech Republic,CZ,Europe,Eastern Europe,false
+European Community,European Community (unspecified),,Europe,Unspecified Europe,false
+USA,United States,US,Americas,Northern America,false
+Canada,Canada,CA,Americas,Northern America,false
+Bermuda,Bermuda,BM,Americas,Northern America,false
+Brazil,Brazil,BR,Americas,South America,false
+West Indies,West Indies (unspecified),,Americas,Caribbean,false
+Australia,Australia,AU,Oceania,Australia and New Zealand,false
+Japan,Japan,JP,Asia,Eastern Asia,false
+Korea,South Korea,KR,Asia,Eastern Asia,false
+Hong Kong,Hong Kong,HK,Asia,Eastern Asia,false
+Singapore,Singapore,SG,Asia,South-eastern Asia,false
+Thailand,Thailand,TH,Asia,South-eastern Asia,false
+Israel,Israel,IL,Asia,Western Asia,false
+Lebanon,Lebanon,LB,Asia,Western Asia,false
+Bahrain,Bahrain,BH,Asia,Western Asia,false
+Saudi Arabia,Saudi Arabia,SA,Asia,Western Asia,false
+United Arab Emirates,United Arab Emirates,AE,Asia,Western Asia,false
+RSA,South Africa,ZA,Africa,Southern Africa,false
+Nigeria,Nigeria,NG,Africa,Western Africa,false
+Unspecified,Unspecified,,Unknown,Unknown,false

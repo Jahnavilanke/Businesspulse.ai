@@ -1,0 +1,31 @@
+groups:
+  - name: businesspulse-pipeline
+    rules:
+      - alert: PipelineLastRunFailed
+        expr: bp_pipeline_last_run_success == 0
+        for: 5m
+        labels: {severity: critical}
+        annotations:
+          summary: "Last BusinessPulse pipeline run failed"
+          description: "Check Data Operations > Pipeline runs or Airflow task logs."
+      - alert: PipelineStale
+        expr: time() - bp_pipeline_last_run_timestamp_seconds > 36 * 3600
+        labels: {severity: warning}
+        annotations:
+          summary: "No pipeline run in the last 36 hours (freshness SLA is 24h)"
+      - alert: DataQualityBelowContract
+        expr: bp_data_quality_score{dimension="overall"} < 0.90
+        labels: {severity: warning}
+        annotations:
+          summary: "Overall data quality below the 0.90 contract threshold"
+      - alert: IngestionBatchFailures
+        expr: sum(bp_ingestion_batches_failed) > 0
+        labels: {severity: warning}
+        annotations:
+          summary: "One or more ingestion batches failed"
+      - alert: CriticalBusinessAlertsOpen
+        expr: bp_open_alerts{severity="critical"} > 0
+        for: 24h
+        labels: {severity: info}
+        annotations:
+          summary: "Critical business alerts have been open for more than a day"

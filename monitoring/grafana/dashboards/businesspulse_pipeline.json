@@ -1,0 +1,30 @@
+{
+  "uid": "bp-pipeline",
+  "title": "BusinessPulse - Pipeline & Data Quality",
+  "schemaVersion": 39,
+  "refresh": "1m",
+  "time": {"from": "now-7d", "to": "now"},
+  "panels": [
+    {"type": "stat", "title": "Last run success", "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+     "datasource": {"uid": "bp-prometheus"},
+     "targets": [{"expr": "bp_pipeline_last_run_success"}],
+     "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "FAILED"}, "1": {"text": "OK"}}}]}}},
+    {"type": "stat", "title": "Last run duration (s)", "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+     "datasource": {"uid": "bp-prometheus"}, "targets": [{"expr": "bp_pipeline_last_run_duration_seconds"}]},
+    {"type": "stat", "title": "Hours since last run", "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+     "datasource": {"uid": "bp-prometheus"}, "targets": [{"expr": "(time() - bp_pipeline_last_run_timestamp_seconds) / 3600"}]},
+    {"type": "stat", "title": "Open critical business alerts", "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+     "datasource": {"uid": "bp-prometheus"}, "targets": [{"expr": "sum(bp_open_alerts{severity=\"critical\"})"}]},
+    {"type": "bargauge", "title": "Data quality by dimension", "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+     "datasource": {"uid": "bp-prometheus"},
+     "targets": [{"expr": "bp_data_quality_score", "legendFormat": "{{dimension}}"}],
+     "fieldConfig": {"defaults": {"min": 0, "max": 1, "unit": "percentunit"}}},
+    {"type": "bargauge", "title": "Task duration - latest run (s)", "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+     "datasource": {"uid": "bp-prometheus"},
+     "targets": [{"expr": "bp_task_duration_seconds", "legendFormat": "{{task}}"}]},
+    {"type": "timeseries", "title": "Ingestion batches (loaded vs failed)", "gridPos": {"x": 0, "y": 12, "w": 24, "h": 8},
+     "datasource": {"uid": "bp-prometheus"},
+     "targets": [{"expr": "bp_ingestion_batches_loaded", "legendFormat": "loaded {{source}}"},
+                 {"expr": "bp_ingestion_batches_failed", "legendFormat": "failed {{source}}"}]}
+  ]
+}

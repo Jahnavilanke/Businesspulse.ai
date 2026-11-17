@@ -1,0 +1,12 @@
+{
+  "name": "UCI Online Retail II (File source)",
+  "sourceDefinition": "airbyte/source-file",
+  "connectionConfiguration": {
+    "dataset_name": "uci_online_retail_ii",
+    "format": "excel",
+    "url": "https://archive.ics.uci.edu/static/public/502/online+retail+ii.zip",
+    "provider": {"storage": "HTTPS", "user_agent": false},
+    "reader_options": "{\"sheet_name\": [\"Year 2009-2010\", \"Year 2010-2011\"], \"dtype\": {\"Invoice\": \"str\", \"StockCode\": \"str\"}}"
+  },
+  "_note": "The file source reads a single file; point `url` at the extracted workbook (or a mirror in S3/MinIO) because the UCI download is a zip."
+}

@@ -1,0 +1,156 @@
+version: 2
+
+models:
+  # ------------------------------------------------------------------ silver
+  - name: stg_transactions
+    description: "Validated, standardized invoice lines (UCI Online Retail II). Rows failing error-level DQ rules are in brz_quarantine_transactions."
+    columns:
+      - name: line_id
+        description: "Deterministic surrogate key: md5(source file | sheet | source row)."
+        data_tests: [unique, not_null]
+      - name: invoice_no
+        data_tests: [not_null]
+      - name: invoice_ts
+        data_tests: [not_null, not_in_future]
+      - name: line_revenue
+        description: "quantity x unit_price, GBP, 2dp."
+        data_tests:
+          - revenue_equals_qty_x_price
+      - name: line_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [product, postage, manual, discount, samples, fee, adjustment, voucher]
+      - name: country_raw
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('country_regions')
+                field: country_raw
+
+  - name: int_products
+    columns:
+      - name: stock_code
+        data_tests: [unique, not_null]
+
+  # ------------------------------------------------------------------ gold: dimensions
+  - name: dim_date
+    description: "Calendar dimension (one row per day) incl. one year of forecast horizon."
+    columns:
+      - name: date_key
+        data_tests: [unique, not_null]
+  - name: dim_geography
+    description: "Country reference with region / market groupings."
+    columns:
+      - name: geography_key
+        data_tests: [unique, not_null]
+  - name: dim_product
+    description: "Product master derived from sales lines. Category is rule-derived; unit cost is unavailable in the source."
+    columns:
+      - name: product_key
+        data_tests: [unique, not_null]
+      - name: list_price_gbp
+        data_tests: [non_negative]
+  - name: dim_customer
+    description: "Identified customers with derived registration date, RFM segment and loyalty tier. customer_key = -1 is the guest member."
+    columns:
+      - name: customer_key
+        data_tests: [unique, not_null]
+      - name: geography_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_geography')
+                field: geography_key
+      - name: rfm_segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Champions, Loyal, New / Promising, Needs Attention, At Risk, Hibernating, Lost, No Completed Purchase, Guest / Unidentified]
+
+  # ------------------------------------------------------------------ gold: facts
+  - name: fact_sales
+    description: "Grain: invoice line. Incremental (delete+insert on line_id, 3-day lookback)."
+    columns:
+      - name: line_id
+        data_tests: [unique, not_null]
+      - name: date_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: customer_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_key
+      - name: product_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_key
+      - name: geography_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_geography')
+                field: geography_key
+      - name: gross_sales
+        data_tests: [non_negative]
+      - name: returns_value
+        data_tests: [non_negative]
+  - name: fact_orders
+    description: "Grain: invoice (product lines only) with new / returning / guest classification."
+    columns:
+      - name: invoice_no
+        data_tests: [unique, not_null]
+  - name: fact_inventory
+    description: "SYNTHETIC stock snapshot x ACTUAL trailing demand. Demonstration only."
+    columns:
+      - name: product_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_key
+      - name: stock_qty
+        data_tests: [non_negative]
+  - name: fact_marketing
+    description: "SYNTHETIC daily campaign performance. Not the retailer's real marketing data."
+    columns:
+      - name: campaign_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_campaign')
+                field: campaign_key
+      - name: cost
+        data_tests: [non_negative]
+  - name: dim_campaign
+    columns:
+      - name: campaign_key
+        data_tests: [unique, not_null]
+
+  # ------------------------------------------------------------------ gold: metric marts
+  - name: mart_kpi_monthly
+    description: "Monthly KPI table - the governed source for executive reporting."
+    columns:
+      - name: month
+        data_tests: [unique, not_null]
+      - name: return_rate
+        data_tests: [non_negative]
+  - name: mart_cohort_retention
+    description: "Monthly acquisition cohorts x months since first purchase."
+  - name: mart_product_monthly
+    description: "Product x month performance."
+  - name: mart_geo_monthly
+    description: "Country x month performance."
+  - name: mart_daily_sales
+    description: "Daily sales series used for forecasting and anomaly detection."
+    columns:
+      - name: date_day
+        data_tests: [unique, not_null]

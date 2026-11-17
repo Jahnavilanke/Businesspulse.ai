@@ -1,0 +1,15 @@
+{
+  "name": "BusinessPulse bronze (S3 / MinIO, Parquet)",
+  "destinationDefinition": "airbyte/destination-s3",
+  "connectionConfiguration": {
+    "s3_bucket_name": "${BP_S3_BUCKET}",
+    "s3_bucket_path": "bronze/transactions/source=uci_online_retail_ii/method=airbyte",
+    "s3_bucket_region": "${AWS_REGION}",
+    "s3_endpoint": "${BP_S3_ENDPOINT_URL}",
+    "access_key_id": "${AWS_ACCESS_KEY_ID}",
+    "secret_access_key": "${AWS_SECRET_ACCESS_KEY}",
+    "format": {"format_type": "Parquet", "compression_codec": "SNAPPY"},
+    "s3_path_format": "${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
+  },
+  "_note": "Secrets are referenced as environment placeholders - never committed. Airbyte stores them in its own secret store."
+}

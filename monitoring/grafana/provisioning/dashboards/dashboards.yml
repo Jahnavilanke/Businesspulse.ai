@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: businesspulse
+    folder: BusinessPulse
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

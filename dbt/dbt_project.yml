@@ -1,0 +1,45 @@
+name: businesspulse
+version: "1.0.0"
+config-version: 2
+profile: businesspulse
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+analysis-paths: ["analyses"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  lake_dir: "{{ env_var('BP_LAKE_DIR', '../data/lake') }}"
+  enable_synthetic: true     # inventory + marketing demo datasets
+  enable_fx: false           # set true by the pipeline when the FX API batch exists
+  revenue_tolerance: 0.01
+
+models:
+  businesspulse:
+    bronze:
+      +schema: bronze
+      +materialized: table   # materialized so read-only consumers never need lake file access
+      +tags: ["bronze"]
+    staging:
+      +schema: silver
+      +materialized: table
+      +tags: ["silver"]
+    intermediate:
+      +schema: silver
+      +materialized: table
+      +tags: ["silver"]
+    marts:
+      +schema: gold
+      +materialized: table
+      +tags: ["gold"]
+
+seeds:
+  businesspulse:
+    +schema: reference
+    country_regions:
+      +column_types: {is_domestic: boolean}
+    category_rules:
+      +column_types: {priority: integer}

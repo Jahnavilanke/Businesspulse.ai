@@ -1,0 +1,25 @@
+{
+  "expectation_suite_name": "silver_transactions",
+  "meta": {
+    "description": "Post-cleaning guarantees for silver.transactions. Uses Great Expectations expectation types; evaluated by great_expectations when installed, otherwise by the native DuckDB evaluator in businesspulse.quality.expectations.",
+    "dataset": "silver.transactions"
+  },
+  "expectations": [
+    {"expectation_type": "expect_table_columns_to_match_set", "kwargs": {"column_set": ["line_id", "invoice_no", "stock_code", "description", "quantity", "unit_price", "line_revenue", "invoice_ts", "invoice_date", "customer_id", "country_raw", "line_type", "is_cancellation", "source_sheet", "batch_id"], "exact_match": false}},
+    {"expectation_type": "expect_column_values_to_be_unique", "kwargs": {"column": "line_id"}},
+    {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "invoice_no"}},
+    {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "stock_code"}},
+    {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "invoice_ts"}},
+    {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "country_raw"}},
+    {"expectation_type": "expect_column_values_to_match_regex", "kwargs": {"column": "invoice_no", "regex": "^[CA]?[0-9]{6}$"}},
+    {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "invoice_date", "min_value": "2009-01-01", "max_value": "2011-12-31"}},
+    {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "customer_id", "min_value": 10000, "max_value": 99999, "mostly": 1.0}},
+    {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "customer_id", "mostly": 0.70}, "meta": {"severity": "warn", "note": "Guest checkouts have no customer id (~23% of lines)."}},
+    {"expectation_type": "expect_column_values_to_be_in_set", "kwargs": {"column": "line_type", "value_set": ["product", "postage", "manual", "discount", "samples", "fee", "adjustment", "voucher"]}},
+    {"expectation_type": "expect_column_pair_values_to_be_equal", "kwargs": {"column_A": "line_revenue", "column_B": "round(quantity * unit_price, 2)"}, "meta": {"business_rule": "revenue = quantity x unit price"}},
+    {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "unit_price", "min_value": 0.001, "row_condition": "line_type = 'product'"}},
+    {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "quantity", "max_value": -1, "row_condition": "is_cancellation"}},
+    {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "quantity", "min_value": 1, "row_condition": "not is_cancellation and line_type = 'product'"}},
+    {"expectation_type": "expect_column_values_to_be_in_set", "kwargs": {"column": "country_raw", "value_set_from_seed": "country_regions.country_raw"}, "meta": {"check": "referential integrity to geography reference"}}
+  ]
+}

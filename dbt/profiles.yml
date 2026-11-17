@@ -1,0 +1,16 @@
+businesspulse:
+  target: local
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('BP_WAREHOUSE_PATH', '../data/warehouse/businesspulse.duckdb') }}"
+      threads: 4
+    # Optional cloud target (see docs/cloud_deployment.md). Requires dbt-redshift.
+    # redshift:
+    #   type: redshift
+    #   host: "{{ env_var('REDSHIFT_HOST') }}"
+    #   user: "{{ env_var('REDSHIFT_USER') }}"
+    #   password: "{{ env_var('REDSHIFT_PASSWORD') }}"
+    #   dbname: analytics
+    #   schema: businesspulse
+    #   port: 5439
